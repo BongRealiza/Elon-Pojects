@@ -1,0 +1,349 @@
+# Bong Realiza - 1 Player BlackJack with Dealer
+
+
+import random
+
+
+
+# Main game loop
+
+def play_game():
+
+    # User chooses a name
+    name = input("Enter your name: ")
+
+
+    while True:
+
+        # Check if user's score is higher than dealer's
+        user_score = user_turn(name)
+        dealer_score = dealer_turn(name)
+
+
+        # Check if user busted
+        if user_score > 21:
+
+            print(f"Sorry {name}, you lose!")
+
+
+        # Check if dealer busted
+        elif dealer_score > 21:
+
+            print(f"Congratulations {name}, you win!")
+
+
+        # Check if user's score is higher than dealer's
+        elif user_score > dealer_score:
+
+            print(f"Congratulations {name}, you win!")
+
+
+        # Check if dealer's score is higher than user's
+        elif user_score < dealer_score:
+
+            print(f"Sorry {name}, you lose!")
+
+
+        # Otherwise, it's a tie
+        else:
+            print("It's a tie!")
+
+
+        # Ask the user if they want to play again
+        play_again = input("Do you want to play again? (yes/no): ").lower()
+
+
+        # If the user doesn't want to play again, exit the loop
+        if play_again != "yes":
+
+            print("Thanks for playing!")
+
+            break
+
+
+
+
+# Draw and print the inital cards for each player's turn
+
+def dealCards(card1, card2):
+
+    # Print the two cards
+    print(" _______     _______ ")
+    print(f"|{card1['rank']:5}  |   |{card2['rank']:5}  |")
+    print("|       |   |       |")
+    print(f"|  {card1['suit']}   |   |  {card2['suit']}   |")
+    print("|       |   |       |")
+    print("|_______|   |_______|", end="  ")
+
+
+
+# Print the drawn card for each player
+
+def drawCard(card3):
+
+    # Print drawn card if user chooses 'hit'
+    print(" _______ ")
+    print(f"|{card3['rank']:5}  |")
+    print("|       |")
+    print(f"|  {card3['suit']}   |")
+    print("|       |")
+    print("|_______|", end="  ")
+
+
+
+
+# Set up the deck
+
+def cardDict():
+
+    suits = ['♥️', '♠️', '♦️', '♣️']
+    cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+
+
+    deck = []
+
+    # Make the full deck
+
+    for suit in suits:
+
+        for card in cards:
+
+            # Create dictionary for each card
+            card_dict = {'suit': suit, 'rank': card}
+
+            # Append the dictionary to the deck
+            deck.append(card_dict)
+
+
+    return deck
+
+
+
+
+# Logic for the player's turn
+
+def user_turn(name):
+
+
+    # Announce player's turn
+    print(f"It's {name}'s turn")
+
+    # Select two cards from deck
+    deck = cardDict()
+    card1 = random.choice(deck)
+    card2 = random.choice(deck)
+
+    # Print both cards
+    dealCards(card1, card2)
+
+    # Set Ace, King, Queen, Jack to numbered values
+    score = calculate_score([card1, card2])
+    print(f"Score: {score}")
+
+    # Check if user has blackjack
+    if score == 21:
+
+        print(f"Blackjack! {name} you win!\n")
+
+        return score
+
+
+    # Check if user busted
+    elif score > 21:
+
+        print(f"You busted! {name} you lose!\n")
+
+        return score
+
+
+    # Ask if user wants to hit/stand
+    else:
+
+        while True:
+
+            choice = input("Would you like to hit or stand?: ").lower()
+
+
+            if choice == 'hit':
+
+                print(f"Card has been drawn")
+
+                # Draw new card
+                card3 = random.choice(deck)
+
+                # Print out drawn card
+                drawCard(card3)
+
+                score += card_value(card3, score)
+
+                print(f"Score: {score}")
+
+
+                # Check if user has blackjack
+                if score == 21:
+
+                    print(f"Blackjack! {name} you win!\n")
+
+                    return score
+
+                # Check if user busted
+                elif score > 21:
+
+                    print(f"You busted! {name} you lose!\n")
+
+                    return score
+
+            elif choice == 'stand':
+
+                break
+
+            else:
+                print("Please enter 'hit' or 'stand'.")
+
+
+        # If user stands end turn
+        print(f"{name}'s turn ends\n")
+
+        return score
+
+
+
+
+# Logic for the dealer's turn
+
+def dealer_turn(name):
+
+    # Announce dealer's turn
+    print("It's the dealer's turn")
+
+    # Select two cards from deck
+    deck = cardDict()
+    card1 = random.choice(deck)
+    card2 = random.choice(deck)
+
+    # Print both cards
+    dealCards(card1, card2)
+
+    # Set Ace, King, Queen, Jack to numbered values
+    score = calculate_score([card1, card2])
+    print(f"Score: {score}")
+
+
+    # Check if dealer has blackjack
+    if score == 21:
+
+        print(f"Dealer has Blackjack. {name} you lose!\n")
+
+
+    # Check if dealer busted
+    elif score > 21:
+
+        print(f"Dealer busted. {name} you win!\n")
+
+
+    # Check if dealer hits
+    else:
+        while score <= 16:
+
+            print(f"Card has been drawn")
+
+            # Draw new card
+            card3 = random.choice(deck)
+
+            # Print out drawn card
+            drawCard(card3)
+
+            score += card_value(card3, score)
+
+            print(f"Score: {score}")
+
+            # Check if dealer has blackjack
+            if score == 21:
+
+                print(f"Dealer has Blackjack. {name} you lose!\n")
+
+
+            # Check if dealer busted
+            elif score > 21:
+
+                print(f"Dealer busted. {name} you win!\n")
+
+
+    print("Dealer's turn ends\n")
+
+
+
+    return score
+
+
+
+
+# Get the numerical value of J/Q/K/A
+
+def card_value(card, score):
+
+    if card['rank'] in ['J', 'Q', 'K']:
+
+        return 10
+
+
+    elif card['rank'] == 'A':
+
+        #Check if choosing 11 will bust the user
+        if score + 11 > 21:
+
+            return 1
+
+        else:
+
+            return 11
+
+    else:
+
+        return int(card['rank'])
+
+
+
+
+# Calculate the current score
+
+def calculate_score(cards):
+
+    score = 0
+
+    num_aces = 0
+
+
+    for card in cards:
+
+        score += card_value(card, score)
+
+        if card['rank'] == 'A':
+
+            num_aces += 1
+
+
+    while score > 21 and num_aces:
+
+        score -= 10
+
+        num_aces -= 1
+
+
+    return score
+
+
+
+
+# _____________________________________________#
+
+
+if __name__ == "__main__":
+
+    play_game()
+
+
+
+
+
+
